@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="description" content="حاسبة تقسيط بسيطة للحساب العادي ومنحة البطالة">
+<title>حاسبة التقسيط</title>
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#f3f7f7,#101817);--card:light-dark(#fff,#1b2523);--panel:light-dark(#f4f8f7,#25312f);--text:light-dark(#172321,#f1f7f5);--muted:light-dark(#62716e,#b0bfba);--border:light-dark(#dce6e3,#3a4945);--accent:#0f766e;--accent2:#115e59;--danger:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;min-height:100vh;padding:18px 14px 30px}.app{max-width:520px;margin:0 auto}.top{padding:8px 2px 18px}.eyebrow{color:var(--accent);font-size:13px;font-weight:800;letter-spacing:.2px}.top h1{font-size:27px;line-height:1.25;margin:7px 0}.top p{color:var(--muted);font-size:14px;margin:0;line-height:1.7}.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 8px 26px #0000000a}.modes{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:22px}.mode,.duration,.secondary{font:inherit;cursor:pointer;touch-action:manipulation}.mode{border:1px solid var(--border);border-radius:12px;padding:14px 7px;background:var(--panel);color:var(--text);font-weight:800;font-size:16px}.mode.active,.duration.active{background:var(--accent);border-color:var(--accent);color:#fff}.label{display:block;font-size:14px;font-weight:700;margin:0 0 9px}.price{width:100%;border:1px solid var(--border);border-radius:12px;padding:15px;background:var(--panel);color:var(--text);font:inherit;font-size:21px;outline-offset:2px;direction:ltr;text-align:right}.price:focus{outline:2px solid var(--accent)}.hint{font-size:12px;color:var(--muted);margin:7px 0 20px}.section-title{font-size:14px;font-weight:700;margin-bottom:10px}.durations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:20px}.duration{border:1px solid var(--border);border-radius:12px;padding:16px 8px;background:var(--panel);color:var(--text);font-size:17px;font-weight:800;min-height:58px}.result{border:1px solid var(--border);border-radius:15px;background:var(--panel);padding:17px}.small{font-size:13px;color:var(--muted)}.monthly{font-size:clamp(27px,8vw,36px);font-weight:900;line-height:1.35;margin:5px 0 17px;overflow-wrap:anywhere;color:var(--accent)}.line{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);font-size:14px}.line strong{font-size:15px;text-align:left;overflow-wrap:anywhere}.line.total{padding-top:15px}.line.total strong{font-size:18px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}.secondary{border:1px solid var(--border);border-radius:11px;padding:12px;background:transparent;color:var(--text);font-size:14px;font-weight:700}.error{font-size:13px;color:var(--danger);margin-top:10px;min-height:0}.error:empty{display:none}.foot{font-size:12px;color:var(--muted);line-height:1.8;text-align:center;padding:15px 10px}.hidden{display:none!important}
+@media(min-width:600px){body{padding-top:35px}.card{padding:23px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="top"><div class="eyebrow">حاسبة سهلة وسريعة</div><h1>حاسبة التقسيط</h1><p>اختَر نوع الحساب والمدة، أدخل السعر، والباقي يتحسب وحده.</p></header>
+<section class="card" aria-label="حاسبة التقسيط">
+<div class="modes" role="group" aria-label="نوع الحساب"><button class="mode active" type="button" data-mode="normal" aria-pressed="true">حساب عادي</button><button class="mode" type="button" data-mode="unemployment" aria-pressed="false">منحة البطالة</button></div>
+<label class="label" for="price">سعر المنتج الأصلي (دج)</label><input class="price" id="price" type="number" min="0" step="any" inputmode="decimal" autocomplete="off" placeholder="مثال: 100000"><p class="hint">أدخل السعر بالدينار الجزائري، دون فواصل أو رموز.</p>
+<div class="section-title">اختر مدة التقسيط</div><div class="durations" id="durations"></div>
+<div class="result" aria-live="polite"><div class="small">القسط الشهري</div><div class="monthly" id="monthly">— دج</div><div class="line"><span class="small">سعر المنتج</span><strong id="original">—</strong></div><div class="line total"><span>المبلغ الإجمالي</span><strong id="total">—</strong></div><div class="error" id="error" role="status"></div></div>
+<div class="actions"><button type="button" class="secondary" id="copy">نسخ تفاصيل الحساب</button><button type="button" class="secondary" id="reset">حساب جديد</button></div>
+</section><footer class="foot">دون تسبيق. النسب مخفية من الواجهة وتُستخدم داخلياً للحساب فقط.<br>تأكد من السعر والمدة قبل اعتماد الحساب.</footer>
+</main>
+<script>
+(()=>{'use strict';
+const rules={normal:[{months:6,rate:35},{months:12,rate:65},{months:15,rate:75},{months:18,rate:90}],unemployment:[{months:4,rate:40},{months:5,rate:45}]};
+let mode='normal',months=6,last=null;
+const $=id=>document.getElementById(id),price=$('price'),durations=$('durations');
+const fmt=n=>new Intl.NumberFormat('fr-DZ',{maximumFractionDigits:2}).format(n)+' دج';
+function renderDurations(){durations.replaceChildren();const options=rules[mode];months=options[0].months;options.forEach(item=>{const b=document.createElement('button');b.type='button';b.className='duration'+(item.months===months?' active':'');b.textContent=item.months+' '+(item.months===1?'شهر':'أشهر');b.setAttribute('aria-pressed',String(item.months===months));b.addEventListener('click',()=>{months=item.months;renderDurationSelection();calculate()});durations.appendChild(b)});}
+function renderDurationSelection(){[...durations.children].forEach(b=>{const active=parseInt(b.textContent,10)===months;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))})}
+function calculate(){const raw=price.value.trim(),p=Number(raw);$('error').textContent='';if(!raw||!Number.isFinite(p)||p<=0){$('monthly').textContent='— دج';$('original').textContent='—';$('total').textContent='—';last=null;if(raw)$('error').textContent='أدخل مبلغاً صحيحاً أكبر من صفر.';return}const rule=rules[mode].find(x=>x.months===months);const increase=p*rule.rate/100,total=p+increase,monthly=total/months;last={mode:mode==='normal'?'حساب عادي':'منحة البطالة',months,price:p,increase,total,monthly};$('monthly').textContent=fmt(monthly);$('original').textContent=fmt(p);$('total').textContent=fmt(total)}
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});renderDurations();calculate()}));
+price.addEventListener('input',calculate);
+$('reset').addEventListener('click',()=>{price.value='';calculate();price.focus()});
+$('copy').addEventListener('click',async()=>{if(!last){$('error').textContent='أدخل السعر أولاً حتى تتمكن من نسخ الحساب.';return}const text=`${last.mode}\nالمدة: ${last.months} أشهر\nسعر المنتج: ${fmt(last.price)}\nالمبلغ الإجمالي: ${fmt(last.total)}\nالقسط الشهري: ${fmt(last.monthly)}`;try{await navigator.clipboard.writeText(text);$('copy').textContent='تم نسخ الحساب';setTimeout(()=>$('copy').textContent='نسخ تفاصيل الحساب',1600)}catch(e){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');$('copy').textContent='تم نسخ الحساب';setTimeout(()=>$('copy').textContent='نسخ تفاصيل الحساب',1600)}catch(_){$('error').textContent='تعذر النسخ تلقائياً. حاول من متصفح آخر.'}ta.remove()}});
+renderDurations();calculate();
+})();
+</script>
+</body>
+</html>
